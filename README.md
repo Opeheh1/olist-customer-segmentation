@@ -1,8 +1,6 @@
 # olist-customer-segmentation
 Customer segmentation project using the Olist Brazilian E-Commerce Public Dataset and machine learning.
 
-# Olist Customer Segmentation Using Machine Learning
-
 ## Project Overview
 This project focuses on developing a customer segmentation solution
 for Olist, a Brazilian e-commerce marketplace. It uses historical
