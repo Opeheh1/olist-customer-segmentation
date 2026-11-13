@@ -1,0 +1,16 @@
+timestamp_utc,run_id,stage,status,records_processed,details
+2026-11-12T23:17:00.433581+00:00,5e56acd9-f4b0-4918-8cb3-40ed74e48394,Raw Data Ingestion and Standardisation,SUCCESS,647593,Six Olist source datasets loaded and standardised.
+2026-11-12T23:17:00.448544+00:00,5e56acd9-f4b0-4918-8cb3-40ed74e48394,Transaction Aggregation,SUCCESS,296779,"Item, payment and review information aggregated by order."
+2026-11-12T23:17:00.453479+00:00,5e56acd9-f4b0-4918-8cb3-40ed74e48394,Data Integration,SUCCESS,99441,Customer and transaction datasets integrated.
+2026-11-12T23:17:00.456520+00:00,5e56acd9-f4b0-4918-8cb3-40ed74e48394,Dataset Saving,SUCCESS,195919,Unified and delivered datasets saved and verified.
+2026-11-12T23:17:00.461508+00:00,5e56acd9-f4b0-4918-8cb3-40ed74e48394,Great Expectations Validation,SUCCESS,99441,Nine data quality expectations passed.
+2026-11-12T23:17:54.879543+00:00,c74860df-9808-43c1-9cd8-a79976744500,Raw Data Ingestion and Standardisation,SUCCESS,647593,Six Olist source datasets loaded and standardised.
+2026-11-12T23:17:54.884727+00:00,c74860df-9808-43c1-9cd8-a79976744500,Transaction Aggregation,SUCCESS,296779,"Item, payment and review information aggregated by order."
+2026-11-12T23:17:54.888519+00:00,c74860df-9808-43c1-9cd8-a79976744500,Data Integration,SUCCESS,99441,Customer and transaction datasets integrated.
+2026-11-12T23:17:54.893505+00:00,c74860df-9808-43c1-9cd8-a79976744500,Dataset Saving,SUCCESS,195919,Unified and delivered datasets saved and verified.
+2026-11-12T23:17:54.896498+00:00,c74860df-9808-43c1-9cd8-a79976744500,Great Expectations Validation,SUCCESS,99441,Nine data quality expectations passed.
+2026-11-13T09:45:57.912617+00:00,fcf2c5ca-e602-4f81-89ff-12a4ab3ad837,Raw Data Ingestion and Standardisation,SUCCESS,647593,Six Olist source datasets loaded and standardised.
+2026-11-13T09:45:57.918592+00:00,fcf2c5ca-e602-4f81-89ff-12a4ab3ad837,Transaction Aggregation,SUCCESS,296779,"Item, payment and review information aggregated by order."
+2026-11-13T09:45:57.921586+00:00,fcf2c5ca-e602-4f81-89ff-12a4ab3ad837,Data Integration,SUCCESS,99441,Customer and transaction datasets integrated.
+2026-11-13T09:45:57.925574+00:00,fcf2c5ca-e602-4f81-89ff-12a4ab3ad837,Dataset Saving,SUCCESS,195919,Unified and delivered datasets saved and verified.
+2026-11-13T09:45:57.928566+00:00,fcf2c5ca-e602-4f81-89ff-12a4ab3ad837,Great Expectations Validation,SUCCESS,99441,Nine data quality expectations passed.

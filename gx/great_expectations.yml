@@ -1,0 +1,52 @@
+config_version: 4.0
+config_variables_file_path: uncommitted/config_variables.yml
+plugins_directory: plugins/
+stores:
+  expectations_store:
+    class_name: ExpectationsStore
+    store_backend:
+      class_name: TupleFilesystemStoreBackend
+      base_directory: expectations/
+  validation_results_store:
+    class_name: ValidationResultsStore
+    store_backend:
+      class_name: TupleFilesystemStoreBackend
+      base_directory: uncommitted/validations/
+  checkpoint_store:
+    class_name: CheckpointStore
+    store_backend:
+      class_name: TupleFilesystemStoreBackend
+      suppress_store_backend_id: true
+      base_directory: checkpoints/
+  validation_definition_store:
+    class_name: ValidationDefinitionStore
+    store_backend:
+      class_name: TupleFilesystemStoreBackend
+      base_directory: validation_definitions/
+expectations_store_name: expectations_store
+validation_results_store_name: validation_results_store
+checkpoint_store_name: checkpoint_store
+data_docs_sites:
+  local_site:
+    class_name: SiteBuilder
+    show_how_to_buttons: true
+    store_backend:
+      class_name: TupleFilesystemStoreBackend
+      base_directory: uncommitted\data_docs\local_site
+    site_index_builder:
+      class_name: DefaultSiteIndexBuilder
+analytics_enabled:
+data_context_id: 68207319-90cc-492b-a6c4-6b85535ae56f
+fluent_datasources:
+  olist_pandas_source:
+    type: pandas
+    id: ab819ce9-2df5-4caa-9570-1f0e0b7ce976
+    assets:
+      olist_unified_orders:
+        type: dataframe
+        id: 49d959b9-e0d7-4847-ab9e-6492b06b552c
+        batch_metadata: {}
+        batch_definitions:
+          olist_unified_batch:
+            id: fe4eb174-6734-4266-8a60-7152516b3d47
+            partitioner:

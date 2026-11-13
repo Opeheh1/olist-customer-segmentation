@@ -218,3 +218,17 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Olist project: local data and generated outputs
+data/raw/
+data/processed/*.csv
+data/processed/*.zip
+processed/
+
+# Great Expectations generated files and local configuration
+gx/uncommitted/
+gx/checkpoints/
+
+# Local environment and secrets
+.env
+.env.*

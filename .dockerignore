@@ -1,0 +1,29 @@
+# Git files
+.git/
+.gitignore
+
+# Python temporary files
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Local environments
+.venv/
+venv/
+env/
+
+# Keep raw and processed data outside the image
+data/
+
+# Exclude notebooks and reports from the image
+notebooks/
+reports/
+
+# Exclude generated Great Expectations documentation
+gx/uncommitted/data_docs/
+gx/uncommitted/validations/
+gx/uncommitted/config_variables.yml
+
+# Other temporary files
+*.log
+.DS_Store

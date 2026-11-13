@@ -1,0 +1,22 @@
+{
+  "data": {
+    "asset": {
+      "id": "49d959b9-e0d7-4847-ab9e-6492b06b552c",
+      "name": "olist_unified_orders"
+    },
+    "batch_definition": {
+      "id": "fe4eb174-6734-4266-8a60-7152516b3d47",
+      "name": "olist_unified_batch"
+    },
+    "datasource": {
+      "id": "ab819ce9-2df5-4caa-9570-1f0e0b7ce976",
+      "name": "olist_pandas_source"
+    }
+  },
+  "id": "804c077c-250c-4e6b-9784-b38639ac8592",
+  "name": "olist_order_quality_validation",
+  "suite": {
+    "id": "a9a143be-0129-41f6-a8dd-91b5fd7b64ee",
+    "name": "olist_order_quality_suite"
+  }
+}
