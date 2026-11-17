@@ -8,3 +8,9 @@ notebook
 scipy
 prefect==3.9.2
 great-expectations==1.24.1
+shap
+joblib
+mlflow
+fastapi
+uvicorn
+pydantic
