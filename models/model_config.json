@@ -1,7 +1,7 @@
 {
     "model_name": "Olist Low Satisfaction Prediction",
     "model_type": "Tuned Random Forest",
-    "classification_threshold": 0.5453,
+    "classification_threshold": 0.5047,
     "positive_class": 1,
     "positive_class_definition": "Average review score <= 2",
     "prediction_unit": "Order"
