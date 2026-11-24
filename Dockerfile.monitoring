@@ -1,0 +1,15 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+COPY requirements-monitoring.txt .
+RUN pip install --no-cache-dir --default-timeout=300 --retries=10 -r requirements-monitoring.txt
+
+COPY dashboard/ ./dashboard/
+
+EXPOSE 8502
+
+CMD ["streamlit", "run", "dashboard/monitoring_dashboard.py", "--server.address=0.0.0.0", "--server.port=8502"]

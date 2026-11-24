@@ -1,0 +1,33 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: olist-api
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Please set DATABASE_URL in your .env file}
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    container_name: olist-main-dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data/processed:/app/data/processed:ro
+    restart: unless-stopped
+
+  monitoring:
+    build:
+      context: .
+      dockerfile: Dockerfile.monitoring
+    container_name: olist-monitoring-dashboard
+    ports:
+      - "8502:8502"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Please set DATABASE_URL in your .env file}
+    restart: unless-stopped
