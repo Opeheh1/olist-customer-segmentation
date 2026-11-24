@@ -25,7 +25,7 @@ PROJECT_DIR = Path(__file__).resolve().parent.parent
 MODEL_PATH = (
     PROJECT_DIR
     / "models"
-    / "baseline_rf_integrated_model.joblib"
+    / "baseline_rf_40trees_api.joblib"
 )
 
 RESULTS_DIR = PROJECT_DIR / "results"

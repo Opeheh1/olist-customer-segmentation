@@ -1,1 +1,2 @@
 models/baseline_rf_integrated_model.joblib filter=lfs diff=lfs merge=lfs -text
+models/baseline_rf_40trees_api.joblib filter=lfs diff=lfs merge=lfs -text
