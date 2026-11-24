@@ -17,3 +17,4 @@ pydantic
 ipykernel
 streamlit==1.67.0
 plotly==6.6.0
+psycopg2-binary==2.9.13

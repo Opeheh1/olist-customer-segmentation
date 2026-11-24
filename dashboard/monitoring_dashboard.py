@@ -1,13 +1,14 @@
 
 # ============================================================
 # OLIST MODEL MONITORING DASHBOARD
-# Monitors API prediction activity using SQLite records
+# Monitors API prediction activity using Neon PostgreSQL
 # ============================================================
 
-from pathlib import Path
-import sqlite3
+import os
+from contextlib import closing
 
 import pandas as pd
+import psycopg2
 import streamlit as st
 import plotly.express as px
 
@@ -24,16 +25,23 @@ st.set_page_config(
 
 
 # ------------------------------------------------------------
-# 2. PROJECT PATHS
+# 2. DATABASE CONNECTION
 # ------------------------------------------------------------
 
-PROJECT_DIR = Path(__file__).resolve().parent.parent
+def get_database_url():
 
-DATABASE_PATH = (
-    PROJECT_DIR
-    / "results"
-    / "api_monitoring.db"
-)
+    # First, try Streamlit Cloud secrets.
+    try:
+        database_url = st.secrets["DATABASE_URL"]
+
+        if database_url:
+            return database_url
+
+    except (KeyError, FileNotFoundError):
+        pass
+
+    # If secrets are unavailable, try the environment variable.
+    return os.getenv("DATABASE_URL")
 
 
 # ------------------------------------------------------------
@@ -56,72 +64,90 @@ st.divider()
 
 
 # ------------------------------------------------------------
-# 4. LOAD PREDICTION RECORDS
+# 4. LOAD PREDICTION RECORDS FROM NEON
 # ------------------------------------------------------------
 
 @st.cache_data(ttl=10)
 def load_prediction_data():
 
-    if not DATABASE_PATH.exists():
-        return pd.DataFrame()
+    database_url = get_database_url()
 
-    try:
+    if not database_url:
+        raise RuntimeError(
+            "DATABASE_URL is not configured. "
+            "Please configure it in Streamlit secrets."
+        )
 
-        with sqlite3.connect(DATABASE_PATH) as connection:
+    query = """
+        SELECT
+            id,
+            prediction_timestamp,
+            model_name,
+            predicted_probability,
+            predicted_class,
+            classification_threshold
 
-            query = """
-                SELECT
-                    id,
-                    prediction_timestamp,
-                    model_name,
-                    predicted_probability,
-                    predicted_class,
-                    classification_threshold
+        FROM public.prediction_logs
 
-                FROM prediction_logs
+        ORDER BY prediction_timestamp DESC
+    """
 
-                ORDER BY prediction_timestamp DESC
-            """
+    with closing(
+        psycopg2.connect(
+            database_url,
+            connect_timeout=10
+        )
+    ) as connection:
 
-            data = pd.read_sql_query(query, connection)
+        data = pd.read_sql_query(
+            query,
+            connection
+        )
 
-        if not data.empty:
+    if not data.empty:
 
-            data["prediction_timestamp"] = pd.to_datetime(
-                data["prediction_timestamp"],
-                utc=True,
+        data["prediction_timestamp"] = pd.to_datetime(
+            data["prediction_timestamp"],
+            utc=True,
+            errors="coerce"
+        )
+
+        numeric_columns = [
+            "predicted_class",
+            "predicted_probability",
+            "classification_threshold"
+        ]
+
+        for column in numeric_columns:
+
+            data[column] = pd.to_numeric(
+                data[column],
                 errors="coerce"
             )
 
-            data["predicted_class"] = pd.to_numeric(
-                data["predicted_class"],
-                errors="coerce"
-            )
-
-            data["predicted_probability"] = pd.to_numeric(
-                data["predicted_probability"],
-                errors="coerce"
-            )
-
-            data["classification_threshold"] = pd.to_numeric(
-                data["classification_threshold"],
-                errors="coerce"
-            )
-
-        return data
-
-    except Exception as error:
-
-        st.error(f"Could not load monitoring records: {error}")
-
-        return pd.DataFrame()
+    return data
 
 
 # ------------------------------------------------------------
 # 5. LOAD DATA
 # ------------------------------------------------------------
 
-data = load_prediction_data()
+try:
+
+    data = load_prediction_data()
+
+except Exception as error:
+
+    st.error(
+        f"Could not load monitoring records from Neon: {error}"
+    )
+
+    st.info(
+        "Check that DATABASE_URL is configured correctly "
+        "in your Streamlit application secrets."
+    )
+
+    st.stop()
 
 
 # ------------------------------------------------------------
@@ -191,7 +217,6 @@ col3.metric(
     "Low Satisfaction"
 )
 
-
 st.divider()
 
 
@@ -222,7 +247,6 @@ col4.metric(
     "Average Predicted Probability",
     f"{average_probability:.2%}"
 )
-
 
 st.caption(
     f"Latest recorded prediction: {latest_prediction}"
@@ -385,6 +409,7 @@ st.info(
     - Monitors predicted risk categories.
     - Displays predicted probability distributions.
     - Records prediction timestamps and model configuration.
+    - Retrieves monitoring records from Neon PostgreSQL.
 
     **Current limitations**
 
