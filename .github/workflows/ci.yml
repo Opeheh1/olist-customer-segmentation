@@ -1,0 +1,53 @@
+# ============================================================
+# OLIST CUSTOMER ANALYTICS PROJECT
+# GITHUB ACTIONS - CONTINUOUS INTEGRATION
+# ============================================================
+
+name: Olist Project CI
+
+# Run automatically when code is pushed or a pull request
+# is created against the main branch.
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+  # Also allow manual workflow execution.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+
+  python-syntax-check:
+
+    name: Python Syntax Validation
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Step 1: Retrieve repository code.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Python.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Step 3: Validate Python syntax.
+      - name: Check Python files
+        run: |
+          python -m compileall -q models dashboard
+
+      # Step 4: Confirm successful validation.
+      - name: Report validation success
+        run: |
+          echo "Python syntax validation completed successfully."
