@@ -1,16 +1,17 @@
 
 # ============================================================
 # OLIST LOW CUSTOMER SATISFACTION PREDICTION API
-# Final integrated Random Forest model + prediction monitoring
+# Random Forest - 40 Trees + Neon PostgreSQL Monitoring
 # ============================================================
 
 from pathlib import Path
 from datetime import datetime, timezone
-import sqlite3
+import os
 import logging
 
 import joblib
 import pandas as pd
+import psycopg2
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, ConfigDict
@@ -28,10 +29,7 @@ MODEL_PATH = (
     / "baseline_rf_40trees_api.joblib"
 )
 
-RESULTS_DIR = PROJECT_DIR / "results"
-RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-
-DATABASE_PATH = RESULTS_DIR / "api_monitoring.db"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -55,40 +53,72 @@ POSITIVE_CLASS_INDEX = list(MODEL.classes_).index(1)
 
 
 # ------------------------------------------------------------
-# 3. INITIALISE THE MONITORING DATABASE
+# 3. INITIALISE THE NEON POSTGRESQL DATABASE
 # ------------------------------------------------------------
+
+DATABASE_READY = False
+
+
+def get_database_connection():
+
+    if not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL environment variable is missing.")
+
+    return psycopg2.connect(
+        DATABASE_URL,
+        connect_timeout=10
+    )
+
 
 def initialise_monitoring_database():
 
-    with sqlite3.connect(DATABASE_PATH, timeout=10) as connection:
+    global DATABASE_READY
 
-        connection.execute("""
-            CREATE TABLE IF NOT EXISTS prediction_logs (
+    try:
 
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+        with get_database_connection() as connection:
 
-                prediction_timestamp TEXT NOT NULL,
+            with connection.cursor() as cursor:
 
-                model_name TEXT NOT NULL,
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS prediction_logs (
 
-                predicted_probability REAL NOT NULL,
+                        id BIGSERIAL PRIMARY KEY,
 
-                predicted_class INTEGER NOT NULL,
+                        prediction_timestamp TIMESTAMPTZ NOT NULL,
 
-                classification_threshold REAL NOT NULL
+                        model_name VARCHAR(150) NOT NULL,
 
-            )
-        """)
+                        predicted_probability DOUBLE PRECISION NOT NULL,
 
-        connection.execute("""
-            CREATE INDEX IF NOT EXISTS idx_prediction_timestamp
-            ON prediction_logs(prediction_timestamp)
-        """)
+                        predicted_class INTEGER NOT NULL,
 
-        connection.commit()
+                        classification_threshold DOUBLE PRECISION NOT NULL
+
+                    )
+                """)
+
+                cursor.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_prediction_timestamp
+                    ON prediction_logs(prediction_timestamp)
+                """)
+
+        DATABASE_READY = True
+
+        logger.info(
+            "Neon PostgreSQL monitoring database initialised successfully."
+        )
+
+    except Exception:
+
+        DATABASE_READY = False
+
+        logger.exception(
+            "Could not initialise Neon monitoring database."
+        )
 
 
-# Create the database and table when the API starts.
+# Initialise the database when the API starts.
 initialise_monitoring_database()
 
 
@@ -98,41 +128,46 @@ initialise_monitoring_database()
 
 def log_prediction(probability, prediction):
 
-    timestamp = datetime.now(timezone.utc).isoformat()
+    global DATABASE_READY
+
+    timestamp = datetime.now(timezone.utc)
 
     try:
 
-        with sqlite3.connect(
-            DATABASE_PATH,
-            timeout=10
-        ) as connection:
+        with get_database_connection() as connection:
 
-            connection.execute("""
-                INSERT INTO prediction_logs (
-                    prediction_timestamp,
-                    model_name,
-                    predicted_probability,
-                    predicted_class,
-                    classification_threshold
-                )
-                VALUES (?, ?, ?, ?, ?)
-            """, (
-                timestamp,
-                MODEL_NAME,
-                probability,
-                prediction,
-                THRESHOLD
-            ))
+            with connection.cursor() as cursor:
 
-            connection.commit()
+                cursor.execute("""
+                    INSERT INTO prediction_logs (
+                        prediction_timestamp,
+                        model_name,
+                        predicted_probability,
+                        predicted_class,
+                        classification_threshold
+                    )
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (
+                    timestamp,
+                    MODEL_NAME,
+                    probability,
+                    prediction,
+                    THRESHOLD
+                ))
 
-        logger.info("Prediction successfully recorded.")
+        DATABASE_READY = True
 
-    except sqlite3.Error:
+        logger.info("Prediction successfully recorded in Neon.")
+
+    except Exception:
+
+        DATABASE_READY = False
 
         # A monitoring failure should not prevent a valid
         # prediction from being returned to the API user.
-        logger.exception("Could not save prediction to monitoring database.")
+        logger.exception(
+            "Could not save prediction to Neon monitoring database."
+        )
 
 
 # ------------------------------------------------------------
@@ -145,7 +180,7 @@ app = FastAPI(
         "Predicts the probability that an order will receive "
         "a low customer satisfaction score."
     ),
-    version="2.1.0"
+    version="2.2.0"
 )
 
 
@@ -241,7 +276,8 @@ def health():
     return {
         "status": "healthy",
         "model_loaded": MODEL is not None,
-        "preprocessor_loaded": PREPROCESSOR is not None
+        "preprocessor_loaded": PREPROCESSOR is not None,
+        "monitoring_database_ready": DATABASE_READY
     }
 
 
@@ -287,7 +323,7 @@ def predict_order(features: OrderFeatures):
 
         prediction = int(probability >= THRESHOLD)
 
-        # Record the prediction for monitoring.
+        # Record the prediction in Neon PostgreSQL.
         log_prediction(probability, prediction)
 
         return {
